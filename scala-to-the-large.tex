@@ -805,7 +805,8 @@ def start(ui: UI): Task[Unit] =
 					\end{tcolorbox}
 				\end{alertblock}	
 				\begin{alertblock}{Monadic "GUI"}
-For the curious, last year I try to define GUI through monad with a similar design \href{https://github.com/cric96/MVC-meets-monad/releases/tag/0.1.0-2021-06-04T085146}{\faLink}
+
+the curious can check the seminar of the past year, where I try to define GUI through monad with a similar design \href{https://github.com/cric96/MVC-meets-monad/releases/tag/0.1.0-2021-06-04T085146}{\faLink}
 				\end{alertblock}
 \end{frame}
 \begin{frame}[fragile]{In Summary}
@@ -835,11 +836,212 @@ For the curious, last year I try to define GUI through monad with a similar desi
 		\end{columns}
 	\end{alertblock}
 \end{frame}
-\section{Framework}
-\subsection{Akka}
-\subsection{Spark}
-\subsection{ScaFi}
-\subsection{Scala Loci}
+\section{Frameworks}
+\begin{frame}{Scala: Best choice to create complex \& distributed Framework}
+	
+\end{frame}
+\subsection{Industry-ready}
+\begin{frame}[c]{The Akka actor toolkit}
+%/////////
+Akka is a toolkit for building highly concurrent, distributed, and resilient
+message-driven applications for Java and Scala
+\begin{itemize}
+	\item It is \bold{the} implementation of the Actor model on the JVM
+	\item It extends the basic Actor model with more convenient \& advanced features
+	\item Akka supports and integrates into an ecosystem of tools for distributed systems
+ \begin{itemize}
+		\item Play (web framework), Spray (REST), Lagom (microservices), Apache Flink (stream/batch
+		processing), Gatling (load-testing)...
+		\item Actors as a basic building block
+ \end{itemize}
+ \item Production-proved: \url{https://www.lightbend.com/case-studies}
+ \item \bold{Website}: \url{https://akka.io/}
+ \item \bold{Docs}: \url{https://akka.io/docs/}
+\end{itemize}
+\begin{alertblock}{Akka APIs and DSLs \href{https://doc.akka.io/docs/akka/current/typed/from-classic.html}{\faLink}}
+	\begin{itemize}
+		\item Akka provides APIs for developing actor-based systems with Java and Scala DSLs
+		\item \emph{Akka Typed}: new, type-safe API
+		\item \emph{Akka Classic}: original API (still fully supported)
+		\item These may coexist in a single application
+	\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Spark}
+	\begin{itemize}
+		\item Apache Spark is a unified analytics engine for large-scale data processing.
+		\begin{itemize}
+			\item It provides high-level APIs in Java, Scala, Python
+		\end{itemize}
+		\item Dataset as a primary abstraction that consists of a distributed collection of items 
+  	\item \textbf{The} framework for big data management.
+   \item Data processing executed on \emph{cluster}
+   	\item It also supports a rich set of higher-level tools including 
+		 \begin{itemize}
+			\item Spark SQL for SQL and structured data processing, 
+   		\item MLlib for machine learning,  
+		 \end{itemize}
+	\end{itemize}
+	\centering
+	\includegraphics[width=5cm]{img/cluster-overview.png}
+\end{frame}
+\begin{frame}[fragile]{Spark -- Example}
+	\begin{alertblock}{}
+		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
+			\begin{minted}{scala}
+// Incarnation: the context of an aggregate program
+import it.unibo.scafi.incarnations.BasicSimulationIncarnation.*
+class DistributedTemperatureSensing extends AggregateProgram
+	// Libraries, expressed as mix-in
+	with BlockG with BlockC with BlockS with BlocksWithGC with StandardSensors { 
+	// "entry point", kind of "end-of-the-world" of effects
+	override def main: Double = {
+		val area = 50 // area size in which I want sense temperature
+		val leader = S(area, nbrRange) // center of that area
+		val potential = distanceTo(leader) // used to send information to leader
+		val areaTemperature = average(leader, temperature) // average temperature value
+		broadcast(leader, areaTemperature) // share the temperature to devices
+	}
+	def temperature: Double = randomGenerator().nextDouble() * 10 + 20
+}
+val program = new DistributedTemperatureSensing
+			\end{minted}
+		\end{tcolorbox}
+	\end{alertblock}
+\end{frame}
+\subsection{Research Framework}
+\begin{frame}{ScaFi (Scala Fields)}
+\begin{itemize}
+	\item ScaFi (Scala Fields) is a Scala-based library and framework for \bold{Aggregate Programming}.
+	\begin{itemize}
+		\item A macro-programming approach to program large-scale distriubted system, formally grounded in Field Calculus
+	\end{itemize}
+	\item \textbf{Goal}: programming the collective behaviour of \emph{aggregates} of devices
+ 	\item Provides a DSL and API for writing, testing, and running aggregate programs
+  \item ScaFi-Web: A web playground based on ScaFi \href{https://scafi.github.io/web/}{\faLink}
+	\item ScaFI is a \emph{multi-module} and \emph{cross platform} scala project:
+	\begin{itemize}
+		\item \texttt{\bold{scafi-commons}} | provides basic abstractions and utilities (e.g., spatial and temporal abstractions);
+		\item \texttt{\bold{scafi-core}} | represents the core of the project and provides an aggregate programming DSL (syntax, semantics, and a virtual machine for evaluation of programs), together with a ``standard library'' of reusable functions;
+		\item \texttt{\bold{scafi-simulator}}: provides a basic support for simulating aggregate systems;
+		\item \texttt{scafi-simulator-gui} | provides a GUI for visualising and interacting with simulations of aggregate systems;
+		\item \texttt{spala} (``spatial Scala''---i.e., a general Aggregate Computing platform | provides an actor-based aggregate computing middleware;
+		\item \texttt{scafi-distributed} |  ScaFi integration-layer for \texttt{spala}, which can be leveraged to set up actor-based deployments of ScaFi-programmed systems.
+		\end{itemize}
+\end{itemize}
+
+
+\end{frame}
+\begin{frame}{ScaFi (Scala Fields) -- Architecture}
+	\centering
+	\includegraphics[width=10cm]{img/scafi-project-org.pdf}
+\end{frame}
+\begin{frame}[fragile, allowframebreaks]{ScaFi (Scala Fields) -- Usage example}
+	\begin{alertblock}{Distributed sensing}
+		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
+			\begin{minted}{scala}
+// Incarnation: the context of an aggregate program
+import it.unibo.scafi.incarnations.BasicSimulationIncarnation.*
+class DistributedTemperatureSensing extends AggregateProgram
+	// Libraries, expressed as mix-in
+	with BlockG with BlockC with BlockS with BlocksWithGC with StandardSensors { 
+	// "entry point", kind of "end-of-the-world" of effects
+	override def main: Double = {
+		val area = 50 // area size in which I want sense temperature
+		val leader = S(area, nbrRange) // center of that area
+		val potential = distanceTo(leader) // used to send information to leader
+		val areaTemperature = average(leader, temperature) // average temperature value
+		broadcast(leader, areaTemperature) // share the temperature to devices
+	}
+	def temperature: Double = randomGenerator().nextDouble() * 10 + 20
+}
+val program = new DistributedTemperatureSensing
+			\end{minted}
+		\end{tcolorbox}
+	\end{alertblock}
+\centering
+	\begin{alertblock}{Self-healing channel}
+		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
+			\begin{minted}{scala}
+class Channel extends AggregateProgram 
+	with StandardSensors with BlockG {
+	override def main() = {
+		def source : Boolean = sense("source") // zone of the space that we want to link to target
+		def target : Boolean = sense("target") // the target of the channel
+		def channel(source: Boolean, target: Boolean, width: Double): Boolean = {
+			// All nodes that are inside the channel
+			distanceTo(source) + distanceTo(target) <= distanceBetween(source, target) + width
+		}
+		val channelWidth = 1
+		channel(source, target, channelWidth)
+	}
+}
+			\end{minted}
+		\end{tcolorbox}
+	\end{alertblock}
+\framebreak
+\begin{columns}
+	\begin{column}[c]{0.4\textwidth}
+		\includegraphics[width=5cm]{img/temperature.png}
+	\end{column}
+	\begin{column}[c]{0.4\textwidth}
+		\includegraphics[width=5cm]{img/channel.png}
+	\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{ScalaLoci}
+\begin{itemize}
+	\item ScalaLoci is a \emph{distributed programming language} embedded into Scala.
+ 	\begin{itemize}
+		\item based on typed-based \emph{multi-tier} programming
+  	\item used to describe deployments \& interaction among components
+		 \item simplifies developing distributed systems
+   	\item reduces error-prone communication code
+    \item favors early detection of bugs
+	 \end{itemize}
+	 \item data are \emph{placed} through distributed data flows, 
+	 \item support multiple software architectures (Client Server, P2P, ...) abstracting over low-level communication details and data conversions
+	 \item Based on Scala \emph{macro} (< 2.13)
+   \item Support several communication protocl (TCP, WebSocket, ...)
+   \item Multi-module \& cross-platform 
+\end{itemize}
+\end{frame}
+\begin{frame}[fragile]{ScalaLoci -- Example}
+	\begin{alertblock}{}
+		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
+			\begin{minted}{scala}
+import loci._ // Contexts..
+import loci.serializer.upickle._ // Serialization context
+import loci.communicator.tcp._ // Communication context
+import rescala.default._ // Observable (reactive stream) cotenxt
+
+@multitier object Chat { // a deployment definition
+	@peer type Server <: { type Tie <: Multiple[Client] } // pear and connections
+	@peer type Client <: { type Tie <: Single[Server] }
+	// Message are placed on Deployments
+	val message : Evt[String] on Client = on[Client] { Evt[String] }
+	// To access to remote data, I must have a Tie
+	val publicMessage = on[Server] sbj { client: Remote[Client] =>
+		message.asLocalFromAllSeq collect { case (remote, message) if remote == client => message }
+	}
+	def main() = on[Client] { // Main client logic
+		publicMessage.asLocal observe println
+		for (line <- scala.io.Source.stdin.getLines) message.fire(line)
+	}
+}
+// Elsewhere...
+object Server extends App {
+	multitier start new Instance[Chat.Server](listen[Chat.Client] { TCP(43053) })
+}
+object Client extends App {
+	multitier start new Instance[Chat.Client](connect[Chat.Server] { TCP("localhost", 43053) })
+}
+			\end{minted}
+		\end{tcolorbox}
+	\end{alertblock}
+\end{frame}
 %/////////
 \frame{\titlepage}
 %/////////
