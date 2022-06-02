@@ -906,22 +906,27 @@ message-driven applications for Java and Scala
 	\begin{alertblock}{}
 		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
-// Incarnation: the context of an aggregate program
-import it.unibo.scafi.incarnations.BasicSimulationIncarnation.*
-class DistributedTemperatureSensing extends AggregateProgram
-	// Libraries, expressed as mix-in
-	with BlockG with BlockC with BlockS with BlocksWithGC with StandardSensors { 
-	// "entry point", kind of "end-of-the-world" of effects
-	override def main: Double = {
-		val area = 50 // area size in which I want sense temperature
-		val leader = S(area, nbrRange) // center of that area
-		val potential = distanceTo(leader) // used to send information to leader
-		val areaTemperature = average(leader, temperature) // average temperature value
-		broadcast(leader, areaTemperature) // share the temperature to devices
-	}
-	def temperature: Double = randomGenerator().nextDouble() * 10 + 20
-}
-val program = new DistributedTemperatureSensing
+// Context
+lazy implicit val spark =
+	SparkSession.builder()
+		.master("local")
+		.appName("spark_test")
+		.getOrCreate()
+
+import spark.implicits._ // Required to call the .toDF function later
+val html = scala.io.Source
+	.fromURL("http://files.grouplens.org/datasets/movielens/ml-100k/u.data")
+	.mkString // Get all rows as one string
+val seqOfRecords = ...
+// Give whatever column names you want
+val df = seqOfRecords.toDF("userID", "movieID", "ratings", "timestamp")
+// Data manipulation (I do not care where this will be executre)
+df
+	.select("ratings") // select the "ratings row"
+	.groupBy("ratings") // group by on ratings
+	.count // count the total number of row for each rating
+	.sort(col("count").desc) // sort the ratings using the count
+	.show()
 			\end{minted}
 		\end{tcolorbox}
 	\end{alertblock}
