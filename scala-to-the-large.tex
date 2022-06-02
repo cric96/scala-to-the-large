@@ -34,8 +34,8 @@
 \title[Scala(e) to the large]
 {Scala(e) to the large}
 %
-\subtitle[Concurrent programming in Scala and relevant Framework]
-{Concurrent programming in Scala and relevant Framework}
+\subtitle[Concurrent programming in Scala and relevant Frameworks]
+{Concurrent programming in Scala and relevant Frameworks}
 %
 \author[\sspeaker{Aguzzi}]
 {\speaker{Gianluca Aguzzi} \href{mailto:gianluca.aguzzi@unibo.it}{gianluca.aguzzi@unibo.it}}
@@ -81,13 +81,13 @@
 		\item Several languages address concurrency by design (e.g. \emph{Erlang}, \emph{Go}, ...)
 		\item Scala is used for several distributed \& concurrent computing frameworks
 		\begin{itemize}
-			\item Both in reaserach (\bold{ScalaLoci}, \bold{ScaFi}) and in industry (\bold{Akka}, \bold{Spark}, \bold{Flink}) 
+			\item Both in reserach (\bold{ScalaLoci}, \bold{ScaFi}) and in industry (\bold{Akka}, \bold{Spark}, \bold{Flink}) 
 		\end{itemize}
   	\item Reasons:
     \begin{enumerate}
 				\item Scala \emph{syntactic flexibility}: enable crafting of embedded domain-specific languages,
-				with Scala serving as a host language, emulating several programming models (e.g., actor)
-				\item Scala is a \emph{safe} language: static type safety reduces the amount of possible error that developers have to care of
+				with Scala serves as a host language, emulating several programming models (e.g., actor)
+				\item Scala is a \emph{safe} language: static type safety reduces the amount of possible errors that developers have to care of
 				\item \emph{Interoperability}: Scala programs can seamlessly use existing Java libraries, and interact with
 				Java's rich ecosystem (recently with JS and Native too)
 		\end{enumerate}
@@ -96,7 +96,7 @@
 		\item Today topics: 
 		\begin{enumerate}
 			\item Recall on low-level concurrency API (JVM model)
-   		\item Future \& Promise as platform independent concurrency mechanisms
+   		\item Future \& Promise as platform-independent concurrency mechanisms
      	\item Functional concurrency management: Monad effects (IO \& Task) and (Functional) Reactive streams 
       \item Application example leveraging Effects \& Functional Reactive Programming (FRP)
 		\end{enumerate}
@@ -115,7 +115,7 @@
 \subsection{Low-level API}
 \begin{frame}[fragile, allowframebreaks]{JVM concurrency API in Scala}
 	\begin{itemize}
-		\item The low-level Scala API is similar to JVM counter part
+		\item The low-level Scala API is similar to JVM counterpart
   	\begin{alertblock}{Thread}
 			Independent computations occurring in the same process 
 			\begin{itemize}
@@ -145,9 +145,9 @@ threadB.start()
 		\begin{alertblock}{Monitor}
 			\begin{itemize}
 				\item Ensure exclusive access to resources 
-				\item synchronizing and communicating among users
-    		\item implemented through \texttt{synchronized} (not a keyword!!), \texttt{wait}, \texttt{notify} and \texttt{notifyAll}
-      	\item or by using high-level API
+				\item Synchronizing and communicating among users
+    		\item Implemented through \texttt{synchronized} (not a keyword!!), \texttt{wait}, \texttt{notify} and \texttt{notifyAll}
+      	\item Or by using high-level API
     		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					\begin{minted}{scala}
 trait Counter:
@@ -170,16 +170,16 @@ object ThreadSafeCounter:
 	\begin{itemize}
 		\item Typically, \texttt{Thread} (and low-level APIs) are not used directly in Scala
   	\begin{itemize}
-			\item \texttt{Thread}s computations do not \emph{composed} well (we will see what we mean with composition) \dots
-   		\item \dots and Scala loves composition (e.g., for-comprhesion)
+			\item \texttt{Thread}s computations do not \emph{compose} well (we will see what we mean with composition) \dots
+   		\item \dots and Scala loves composition (e.g., for-comprehension)
      \item \texttt{Thread}s are not declarative (encapsulate the effect of computations)
 		\end{itemize}
- 		\item \texttt{scala.concurrent} exposes several high-level pattern to handle concurrency \& synchornization
+ 		\item \texttt{scala.concurrent} exposes several high-level patterns to handle concurrency \& synchronization
  		\item JVM API cannot be used in different platforms (i.e., Scala.js)
    	\item Use this API when:
     \begin{itemize}
 			\item You need to build very high-performant application
-   		\item You create an application that target only the JVM ecosystem 
+   		\item You create an application that targets only the JVM ecosystem 
 		\end{itemize}
 		\item in all the other cases, you should use \texttt{scala.concurrent} API
   \end{itemize}
@@ -233,7 +233,7 @@ def async(any: => Unit)(using ExecutionContext): Unit =
 		\item Scala collections can be transformed into their parallel counterparts by calling the par
 		method (Scala < 2.13)
 		\item Exist solely in order to improve the running time of the program
-  	\item Idea: I express a data pipiline computation and then the runtime optimize it using several cores
+  	\item Idea: I express a data pipeline computation and then the runtime optimizes it using several cores
 		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
 (0 until 100000).par.map(_.toString).filter(x => x == x.reverse)
@@ -475,7 +475,7 @@ Task { Source.fromFile(...) }
 	\begin{alertblock}{Definition}
 		Task represents a specification for a possibly lazy or asynchronous
 computation, which when executed will produce a data as a result, along
-with possible side-effects.
+with possible side effects.
 	\end{alertblock}
 	\begin{itemize}
   	\item doesn’t trigger the execution, or any effects 
@@ -817,7 +817,7 @@ the curious can check the seminar of the past year, where I try to define GUI th
     \item In this way:
     \begin{itemize}
 			\item Your application became "reactive" 
-   		\item Side effects happens only at the "end-of-the-world"
+   		\item Side effects happen only at the "end-of-the-world"
      \item You can reason about effects, avoiding to care about side effects
      \item Error handling cames free
      \item Your application works seamlessly in JVM \& JS world
@@ -839,9 +839,9 @@ the curious can check the seminar of the past year, where I try to define GUI th
 \section{Frameworks}
 \begin{frame}{Scala: Best choice to create complex \& distributed Framework}
 	\begin{itemize}
-		\item DSL hide complexity giving high-level API
-  	\item Contextual information (i.e. to use API) is passed through \emph{implicit} giving the impression of "enrich" the languague
-   \item Strong type system enforce compile-time correctness
+		\item DSL hides complexity giving high-level API
+  	\item Contextual information (i.e. to use API) is passed through \emph{implicit} giving the impression of "enrich" the language
+   \item Strong type system enforces compile-time correctness
    \item Programmers focus on the intent (declarative approach)
    \item Future / Observable / Task example:
    \begin{itemize}
@@ -851,8 +851,8 @@ the curious can check the seminar of the past year, where I try to define GUI th
 	 \end{itemize}
 	 \item In the next slides:
 	 \begin{itemize}
-			\item two relevant example of industry-proven scala framwork (Akka \& Spark)
-   	\	\item two exaples of reasearc oriented libraries \& framework (ScaFi \% ScalaLoci) 
+			\item two relevant examples of industry-proven scala framework (Akka \& Spark)
+   	\	\item two examples of reasearch oriented libraries \& framework (ScaFi \& ScalaLoci) 
 	 \end{itemize}
 	\end{itemize}
 \end{frame}
