@@ -31,6 +31,7 @@
 	\makeatletter
 
 \addbibresource{biblio.bib}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title[Scala(e) to the large]
 {Scala(e) to the large}
@@ -100,7 +101,7 @@
 			\item Recall on low-level concurrency API (JVM model)
    		\item Future \& Promise as platform-independent concurrency mechanisms
      	\item Functional concurrency management: Monad effects (IO \& Task) and (Functional) Reactive streams 
-      \item Application example leveraging Effects \& Functional Reactive Programming (FRP)
+      \item An application example leveraging Effects \& Functional Reactive Programming (FRP)
 		\end{enumerate}
 	\end{itemize}
 	\begin{itemize}
@@ -147,9 +148,9 @@ threadB.start()
 		\begin{alertblock}{Monitor}
 			\begin{itemize}
 				\item Ensure exclusive access to resources 
-				\item Synchronizing and communicating among users
+				\item Synchronization and communication among users
     		\item Implemented through \mintinline{scala}{synchronized} (not a keyword!!), \mintinline{scala}{wait}, \mintinline{scala}{notify} and \mintinline{scala}{notifyAll}
-      	\item Or by using high-level API
+      	\item Or by using high-level API (\mintinline{scala}{java.util.concurrent})
     		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					\begin{minted}{scala}
 trait Counter:
@@ -174,12 +175,12 @@ object ThreadSafeCounter:
 		\item Typically, \texttt{Thread} (and low-level APIs) are not used directly in Scala
   	\begin{itemize}
 			\item \texttt{Thread}s computations do not \emph{compose} well (we will see what we mean with composition) \dots
-   		\item \dots and Scala loves composition (e.g., for-comprehension)
-     \item \texttt{Thread}s are not declarative (encapsulate the effect of computations)
+   		\item \dots and Scala loves composition (e.g., for-comprehension \& monads)
+     \item \texttt{Thread}s are not declarative (``encapsulate'' the effect of computations)
 		\end{itemize}
  		\item \texttt{scala.concurrent} exposes several high-level patterns to handle concurrency \& synchronization
  		\item JVM API cannot be used in different platforms (i.e., Scala.js)
-   	\item Use this API when:
+   	\item Use these APIs when:
     \begin{itemize}
 			\item You need to build very high-performant application
    		\item You create an application that targets only the JVM ecosystem 
@@ -189,11 +190,11 @@ object ThreadSafeCounter:
 \end{frame}
 \begin{frame}[fragile, allowframebreaks]{Execution Context}
 	\begin{itemize}
-		\item An \texttt{ExecutionContext} can execute program logic asynchronously, typically but not necessarily on a thread pool.
+		\item An \texttt{ExecutionContext} can execute program logic asynchronously, typically but not necessarily on a thread pool
 		\item First layer of abstraction over \texttt{Thread}s used for large number of small concurrent tasks with high
-		throughput,
-  	\item Similar to the \texttt{Executors} Java framework, but platform-independent 
-   	\item Drive to pass the context ``implictily'' (i.e., using \mintinline{scala}{given} \& \mintinline{scala}{using}) 
+		throughput
+  	\item Similar to the \texttt{Executors} Java framework, but platform-independent (works bot from JVM, JS, Native)
+   	\item Drive to pass the context ``implictily'' (i.e., using \mintinline{scala}{given} \& {\color{darkgreen}\mintinline{scala}{using}}) 
 		 \item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
 def sayGreet()(using context: ExecutionContext): Unit =
@@ -641,7 +642,7 @@ val game = for {
 	\begin{itemize}
 		\item At its simplest, an\ \texttt{Observable} is a replacement for your regular \texttt{Iterable} or Scala \texttt{LazyList}, but with the ability to process asynchronous events without blocking.
   	\item Enables Functional Reactive Programming (FRP) 
-   \item basically the Observer pattern on steroids
+   \item basically the Observer pattern \emph{on steroids}
    \begin{itemize}
 			\item async events management (decoupling of control flow)
    		\item backpressure 
@@ -925,7 +926,7 @@ message-driven applications for Java and Scala
 \end{alertblock}
 \end{frame}
 
-\begin{frame}{Spark}
+\begin{frame}{Spark \href{https://spark.apache.org/}{\faLink}}
 	\begin{itemize}
 		\item Apache Spark is a unified analytics engine for large-scale data processing.
 		\begin{itemize}
@@ -943,7 +944,7 @@ message-driven applications for Java and Scala
 	\centering
 	\includegraphics[width=5cm]{img/cluster-overview.png}
 \end{frame}
-\begin{frame}[fragile]{Spark -- Example}
+\begin{frame}[fragile]{Spark -- Example \href{https://github.com/cric96/spark-mini-example}{\faLink}}
 	\begin{alertblock}{}
 		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
