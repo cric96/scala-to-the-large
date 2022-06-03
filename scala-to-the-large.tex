@@ -12,11 +12,12 @@
 \usepackage[T1]{fontenc}
 \usepackage{wasysym}
 \usepackage{amsmath,blkarray}
+\usepackage{minted}
 \usepackage[minted,most]{tcolorbox}
 \usepackage{centernot}
 \usepackage{fontawesome}
 \usepackage{fancyvrb}
-\setminted[scala]{fontsize=\scriptsize,baselinestretch=1,obeytabs=true, tabsize=2}
+\setminted[scala]{fontsize=\small,baselinestretch=1,obeytabs=true, tabsize=2}
 \usepackage[ddmmyyyy]{datetime}
 \renewcommand{\dateseparator}{}
 %\renewcommand{\thefootnote}{\fnsymbol{footnote}}
@@ -70,6 +71,7 @@
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 %/////////
 \frame{\titlepage}
 %/////////
@@ -81,7 +83,7 @@
 		\item Several languages address concurrency by design (e.g. \emph{Erlang}, \emph{Go}, ...)
 		\item Scala is used for several distributed \& concurrent computing frameworks
 		\begin{itemize}
-			\item Both in research (\bold{ScalaLoci}, \bold{ScaFi}) and in industry (\bold{Akka}, \bold{Spark}, \bold{Flink}) 
+			\item Both in research (\bold{ScalaLoci} \href{https://scala-loci.github.io/}{\faLink}, \bold{ScaFi} \href{https://scafi.github.io/}{\faLink}) and in industry (\bold{Akka} \href{https://akka.io/}{\faLink}, \bold{Spark} \href{https://spark.apache.org/}{\faLink}, \bold{Flink} \href{https://flink.apache.org/}{\faLink}) 
 		\end{itemize}
   	\item Reasons:
     \begin{enumerate}
@@ -146,7 +148,7 @@ threadB.start()
 			\begin{itemize}
 				\item Ensure exclusive access to resources 
 				\item Synchronizing and communicating among users
-    		\item Implemented through \texttt{synchronized} (not a keyword!!), \texttt{wait}, \texttt{notify} and \texttt{notifyAll}
+    		\item Implemented through \mintinline{scala}{synchronized} (not a keyword!!), \mintinline{scala}{wait}, \mintinline{scala}{notify} and \mintinline{scala}{notifyAll}
       	\item Or by using high-level API
     		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					\begin{minted}{scala}
@@ -157,7 +159,8 @@ trait Counter:
 object ThreadSafeCounter:
 	def apply(): Counter = new Counter:
     private var count = 0 // encapsulated state
-    // synchronized is not a keyword.. so you cannot write synchronized def tick ...
+    // synchronized is not a keyword.. 
+		// so you cannot write synchronized def tick ...
     def tick(): Unit = this.synchronized(count += 1)
     def value = this.synchronized(count)
 					\end{minted}
@@ -190,7 +193,7 @@ object ThreadSafeCounter:
 		\item First layer of abstraction over \texttt{Thread}s used for large number of small concurrent tasks with high
 		throughput,
   	\item Similar to the \texttt{Executors} Java framework, but platform-independent 
-   	\item Drive to pass the context ``implictily'' (i.e., using \texttt{given} \& \texttt{using}) 
+   	\item Drive to pass the context ``implictily'' (i.e., using \mintinline{scala}{given} \& \mintinline{scala}{using}) 
 		 \item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
 def sayGreet()(using context: ExecutionContext): Unit =
@@ -199,7 +202,8 @@ def sayGreet()(using context: ExecutionContext): Unit =
 @main def executeTask: Unit =
 	val context = ExecutionContext.global // global execution context
 	context.execute(() => println("Task done!"))
-	val fromExecutors = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
+	val fromExecutors = ExecutionContext
+		.fromExecutor(Executors.newSingleThreadExecutor())
 	fromExecutors.execute(() => println("Java wrapper"))
 	//sayGreet() // error
 	given ExecutionContext = fromExecutors // enrich the context
@@ -213,12 +217,15 @@ def sayGreet()(using context: ExecutionContext): Unit =
   	\item We can built a ``context''-oriented DSL for async computation:
 		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
-/* In scala, a natural way to "enrich" the language consist in using contexts + entrypoints.*/
+/* In Scala, a natural way to "enrich" 
+	 the language consist in using contexts + entrypoints.
+*/
 def async(any: => Unit)(using ExecutionContext): Unit =
 	summon[ExecutionContext].execute(() => any)
 
 @main def tryDsl(): Unit =
-	given ExecutionContext = ExecutionContext.global // express the context ==> enrich the language
+	// express the context ==> enrich the language
+	given ExecutionContext = ExecutionContext.global
 	println("Do somethings")
 	async { // I can use async like a language API
 		println("order??")
@@ -231,7 +238,7 @@ def async(any: => Unit)(using ExecutionContext): Unit =
 \begin{frame}[fragile]{Parallell collections example: toward declative parallel computations}
 	\begin{itemize}
 		\item Scala collections can be transformed into their parallel counterparts by calling the par
-		method (Scala < 2.13)
+		method (as standard library for Scala < 2.13, an external dependecy for Scala >= 2.13 \href{https://github.com/scala/scala-parallel-collections}{\faLink})
 		\item It exists solely in order to improve the running time of the program
   	\item Idea: I express a data pipeline computation and then the runtime optimizes it using several cores
 		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
@@ -252,7 +259,7 @@ def async(any: => Unit)(using ExecutionContext): Unit =
 	\end{alertblock}
 \begin{itemize}
  \item It is the idiomatic wat to express concurrent computations
- \item You handle the result of a future with \emph{callback} methods \emph{transformation} methods
+ \item You handle the result of a future with \emph{callback} and   \emph{transformation} methods
  \item Future is a monad that models \emph{latency} as an \emph{effect}
  \item Futures are one-shot: the value contained by a future will be eventually available
  \item Futures are \emph{eager}: the computation starts on \texttt{Future} creation
@@ -275,6 +282,7 @@ def async(any: => Unit)(using ExecutionContext): Unit =
 using ExecutionContext = scala.concurrent.ExecutionContext.global
 Future { 1 } // Future are eager, i.e., the computation starts on creation
 val fututers = (1 to 10).map(Future.apply) // create sequence of future
+// standard Monad sequential, applied for Future :)
 Future.sequential(futures) // Map F[Future[_]] in Future[F[_]]
 				\end{minted}
 			\end{tcolorbox}
@@ -294,7 +302,8 @@ Future(10)
 \begin{alertblock}{Future Manipulation}
 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					\begin{minted}{scala}
-val build = Future(Source.fromFile("build.sbt")) // Concurrent program expressed as sequence of map
+// Concurrent program expressed as sequence of map
+val build = Future(Source.fromFile("build.sbt"))
 	.map(source => source.getLines())
 	.map(lines => lines.mkString("\n"))
 
@@ -316,9 +325,11 @@ def readFile(name: String): Future[Source] = Future { Source.fromFile(name) }
 
 val concurrentManipulation = for {
 	buildSbt <- readFile("build.sbt")
-	// synchornization point, scalafmt have to wait buildSbt future
-	scalafmt <- readFile(".scalafmt.conf") // NB! build this two future are sequential
-	fileSbt = extractLines(buildSbt) // I can you the data inside a Future manipulation..
+	// synchornization point, scalafmt has to wait buildSbt future
+	// NB! these two futures are sequential
+	scalafmt <- readFile(".scalafmt.conf") 
+	// I can map the "lazy" data inside a Future "for-comprehension"..
+	fileSbt = extractLines(buildSbt)
 	fileFmt = extractLines(scalafmt)
 } yield (fileFmt + fileSbt)
 					\end{minted}
@@ -331,7 +342,9 @@ val myContext = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor(
 def createFuture(using ExecutionContext) = Future {
 	println(s"Hey! The thread is: ${Thread.currentThread().getName}")
 }
-createFuture(using global) // I can pass explicitly the context (i.e. when I want a fine control for execution)
+/* I can pass explicitly the context 
+   (i.e. when I want a fine control for execution) */
+createFuture(using global)
 given ExecutionContext = myContext // I can overwrite the execution context
 createFuture
 						\end{minted}
@@ -344,9 +357,10 @@ val failed = Future.fromTry(Failure(new Exception("fail")))
 failed.onComplete { case Failure(exception) =>
 	println("error..")
 }
-// Special operator to wait a future.. Sync point (to avoid)
+// Special operator to wait for a future.. Sync point (to avoid)
 Await.ready(failed, Duration.Inf)
-val fail = Future(1).failed // create a future that completes if the future fails
+// create a future that completes if the future fails
+val fail = Future(1).failed 
 fail.foreach(println)
 Await.ready(fail, Duration.Inf)
 val empty = Future(1).filter(_ => false)
@@ -359,8 +373,9 @@ Await.ready(empty, Duration.Inf)
 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 		\begin{minted}{scala}
 val fail = Future("hello")
-	.filter(_ == "ciao") // the future fail since "hello" != "ciao"
-	.recoverWith(_ => Future("ciao")) // but I can recover it with another future (compose)
+	.filter(_ == "ciao") // the future fails since "hello" != "ciao"
+	// but I can recover it with another future (compose
+	.recoverWith(_ => Future("ciao")) )
 fail.foreach(println) // You can consume the future using foreach
 		\end{minted}
 	\end{tcolorbox}
@@ -373,13 +388,12 @@ val latch = CountDownLatch(blocks)
 val all = (1 to blocks).map(i =>
 	Future {
 		println(s"Turn $i")
-		blocking {
+		blocking { // NB! Does not work for thread pool
 			latch.countDown()
 			latch.await()
 		}
 	}
 )
-
 Await.ready(Future.sequence(all), Duration.Inf)
 		\end{minted}
 	\end{tcolorbox}
@@ -457,18 +471,19 @@ for {
 			\item When a piece of code contains (express with effect) a side-effect, that action \emph{just happens}
 		\end{itemize}
 		\item \texttt{IO} (and \texttt{Task}, we will use this name hereafter) can be uxecuted asynchronously, in parallel, in different threads, ...
-  	\item \bold{NB} When side-effecting code is wrapped in one \texttt{Task}...
+  	\item \bold{NB!} When side-effecting code is wrapped in one \texttt{Task}...
 		\begin{itemize}
 			 \item the code itself still contains side-effects 
 			 \item but we can reason about the whole thing as an effect, rather than as a side-effect
     \end{itemize}
 		\item[] 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
-// this has a side-effect, but I can reason about this computation as Task[String]
+// this has a side-effect, 
+// but I can reason about this computation as Task[String]
 Task { Source.fromFile(...) } 
 			\end{minted}
 		\end{tcolorbox}
-		\item \bold{NB} \texttt{IO} is more general then \texttt{Task}, but today we consider these abstractions as the same
+		\item \bold{NB!} \texttt{IO} is more general then \texttt{Task}, but today we consider these abstractions as the same
 	\end{itemize}
 \end{frame}
 \begin{frame}{Task \href{https://monix.io/docs/current/eval/task.html}{\faLink}}
@@ -500,8 +515,10 @@ val now = Task.now {
 	Math.random()
 } // it evaluates the value asap and wraps it inside the task
 //Task.apply =:= Task.eval
-val standard = Task(Math.random()) // lazy.. the evaluation happen when the task is created
-// Similar to a lazy val, the value it is evaluated once and then memoized (like future)
+// lazy.. the evaluation happen when the task is created
+val standard = Task(Math.random())
+// Similar to a lazy val, the value it is evaluated 
+// once and then memoized (like future)
 val once = Task.evalOnce {
 	Math.random()
 }
@@ -513,7 +530,8 @@ val future = Future(Math.random())
 			\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 						 \begin{minted}{scala}
 val file = Task(Source.fromFile("build.sbt"))
-def linesFromSource(source: Source): Task[List[String]] = Task(source.getLines().toList).map(_.take(5))
+def linesFromSource(source: Source): Task[List[String]] = 
+	Task(source.getLines().toList).map(_.take(5))
 // Sequence evaluation
 val result = for {
 	build <- file
@@ -552,7 +570,9 @@ val memo = random.memoize
 						\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 									 \begin{minted}{scala}
 val semaphore = Semaphore[Task](1) // like a Lock
-var shared = 0 // Just an example, in effect you should not use vars.. consider a shared resources..
+// Just an example, in effect you should not use vars... 
+// Consider shared resources...
+var shared = 0 
 def effect: Task[Unit] = Task {
 	shared += 1
 	println(Thread.currentThread().getName)
@@ -573,14 +593,15 @@ assert(shared == 1000)
 										 \begin{minted}{scala}
 // Tasks can fail...
 val fail = Task.raiseError(new IllegalStateException("..."))
-// I can handle error like Future (but with more flexibility, e.g., restarting the computation)
+// I can handle error like Future 
+// (but with more flexibility, e.g., restarting the computation)
 val recovered = fail.onErrorHandle(_ => 10)
 										 \end{minted}
 									 \end{tcolorbox}
 							 \end{alertblock}
 \begin{alertblock}{An Entire application expressed with Task}
 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
-					\begin{minted}{scala}
+					\begin{minted}[fontsize=\scriptsize]{scala}
 enum State:
 	case Continue, End
 val input = Task.eval(StdIn.readLine())
@@ -618,9 +639,14 @@ val game = for {
 		The Observable is a data type for modeling and processing asynchronous and reactive streaming of (possibly infinite) events with non-blocking back-pressure.
 	\end{alertblock}
 	\begin{itemize}
-		\item At its simplest, an\ \texttt{Observable} is a replacement for your regular \texttt{Iterable} or Scala \texttt{Stream}, but with the ability to process asynchronous events without blocking.
+		\item At its simplest, an\ \texttt{Observable} is a replacement for your regular \texttt{Iterable} or Scala \texttt{LazyList}, but with the ability to process asynchronous events without blocking.
   	\item Enables Functional Reactive Programming (FRP) 
    \item basically the Observer pattern on steroids
+   \begin{itemize}
+			\item async events management (decoupling of control flow)
+   		\item backpressure 
+     	\item Error management
+	 \end{itemize}
    \item Expresses lazy computations
    \item Inspired by ReacitveX \href{https://reactivex.io/intro.html}{\faLink}
 	\end{itemize}
@@ -640,8 +666,10 @@ val game = for {
 	\begin{alertblock}{Observable Creation}
 		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					 \begin{minted}{scala}
-val single = Observable.pure { println("hey!"); 10 } // print hey! because the value is evaluated asap
-val delay = Observable.delay { println("hey"); 10 } // hey is printed each time the observable is consumed
+// print hey! because the value is evaluated asap
+val single = Observable.pure { println("hey!"); 10 }
+// hey is printed each time the observable is consumed
+val delay = Observable.delay { println("hey"); 10 }
 // hey is printed once, then the value is memoized
 val lazyObservable = Observable.evalOnce { println("hey"); 10 } 
 val sideEffects = Observable.suspend {
@@ -657,7 +685,8 @@ Thread.sleep(500)
 			\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 						 \begin{minted}{scala}
 // I can express infinite computation...
-val stepper = Observable.fromIterable(LazyList.continually(10)).delayOnNext(500 milliseconds)
+val stepper = Observable.fromIterable(LazyList.continually(10))
+	.delayOnNext(500 milliseconds)
 val greeter = Observable.repeatEval("Hello!!").delayOnNext(100 milliseconds)
 val combined = for { // I can combine observable like list, option,....
 	number <- stepper
@@ -673,9 +702,10 @@ combined.foreach(println(_))
 							 \begin{minted}{scala}
 val button = JButton("Click me!!")
 // Using create api
-val buttonObservable = Observable.create[Long](OverflowStrategy.Unbounded) { subject =>
-	button.addActionListener((e: ActionEvent) => subject.onNext(e.getWhen))
-	Cancelable.empty
+val buttonObservable = 
+	Observable.create[Long](OverflowStrategy.Unbounded) { subject =>
+		button.addActionListener((e: ActionEvent) => subject.onNext(e.getWhen))
+		Cancelable.empty
 }
 // Or through subjects (i.e., tuple of observer and observable)
 val subject = ConcurrentSubject[Long](MulticastStrategy.replay)
@@ -690,8 +720,10 @@ button.addActionListener((e: ActionEvent) => subject.onNext(e.getWhen))
 val obs = Observable("A", "B", "C", "D", "E", "F", "G")
 val syncObs = obs // By default, the obs manipulation are sequential
 	.mapEval(elem => Task { println(s"Processing (1) : $elem"); elem + elem })
-	.asyncBoundary(OverflowStrategy.Unbounded) // change the observable evaluation to another execution logic
-	.mapEval(elem => Task { println(s"Processing (2) : $elem"); elem }.delayExecution(200 milliseconds))
+	// change the observable evaluation to another execution logic
+	.asyncBoundary(OverflowStrategy.Unbounded)
+	.mapEval(elem => Task { println(s"Processing (2) : $elem"); elem }
+	.delayExecution(200 milliseconds))
 								 \end{minted}
 							 \end{tcolorbox}
 					 \end{alertblock}	
@@ -700,12 +732,16 @@ val syncObs = obs // By default, the obs manipulation are sequential
 						\begin{minted}{scala}
 val element = Observable.fromIterable((0 to 10))
 val parallelMap = element.mapParallelOrdered(8)(elem =>
-	Task(elem * 5).tapEval(id => Task(println(id + " " + Thread.currentThread().getName)))
+	Task(elem * 5)
+		.tapEval(id => Task(println(id + " " + Thread.currentThread().getName)))
 )
 val parallelUnorderedMap = element.mapParallelUnordered(8)(elem =>
-	Task(elem * 5).tapEval(id => Task(println(id + " " + Thread.currentThread().getName)))
+	Task(elem * 5)
+		.tapEval(id => Task(println(id + " " + Thread.currentThread().getName)))
 )
-val mergeParallel = element.delayOnNext(100 milliseconds).mergeMap(_ => Observable(1).delayOnNext(100 milliseconds))
+val mergeParallel = element.delayOnNext(100 milliseconds)
+	.mergeMap(_ => Observable(1)
+	.delayOnNext(100 milliseconds))
 							\end{minted}
 						\end{tcolorbox}
 					\end{alertblock}	
@@ -739,9 +775,11 @@ val mergeParallel = element.delayOnNext(100 milliseconds).mergeMap(_ => Observab
 //(but they are wrapper with monadic abstractions)
 // even more general: UI[Event, Data, F[_], R[_]]
 trait UI:
-	// Event source produced by this UI (outside of "functional" world, unsafe, unpure)
+	// Event source produced by this UI 
+	// (outside of the "functional" world, unsafe, unpure)
 	def events: Observable[Event]
-	// Render the world representation. It is an effect, therefore it returns a Task
+	// Render the world representation. 
+	// It is an effect, therefore it returns a Task
 	def render(world: World): Task[Unit]
 		\end{minted}
 		\end{tcolorbox}
@@ -760,7 +798,8 @@ case class World(...)
 		\begin{alertblock}{Update: namely how world should change}
 			\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 				\begin{minted}{scala}
-// This should be expressed as a function, (event, world) => Task[(Ager, Control)]
+// This should be expressed as a function, 
+// (event, world) => Task[(Ager, Control)]
 // Or Controller[E, M, F[_]] => (E, M) => F[(M, Control[E, M, F])]
 trait Update extends ((Event, World) => Task[(World, Update)]):
 	def andThen(control: Update): Update = ...
@@ -772,7 +811,9 @@ object Update:
 	// Creation API
 	def same(function: (Event, World) => World): Update = ...
 
-	def on[E <: Event](control: (E, World) => Task[World])(using ev: ClassTag[E]): Update = ...
+	def on[E <: Event](
+		control: (E, World) => Task[World]
+	)(using ev: ClassTag[E]): Update = ...
 
 	def combineTwo(engineA: Update, engineB: Update): Update = ...
 		yield (lastWorld, combineTwo(newEngineA, newEngineB))
@@ -937,6 +978,7 @@ df
 	\item ScaFi (Scala Fields) is a Scala-based library and framework for \bold{Aggregate Programming}.
 	\begin{itemize}
 		\item A macro-programming approach to program large-scale distriubted system, formally grounded in Field Calculus
+		\item developed by our research group (mainly by prof. Viroli \& dott. Casadei, with contributions of several students \href{https://github.com/scafi/scafi/graphs/contributors}{\faLink})
 	\end{itemize}
 	\item \textbf{Goal}: programming the collective behaviour of \emph{aggregates} of devices
  	\item Provides a DSL and API for writing, testing, and running aggregate programs
@@ -969,15 +1011,18 @@ class DistributedTemperatureSensing extends AggregateProgram
 	with BlockG with BlockC with BlockS with BlocksWithGC with StandardSensors { 
 	// "entry point", kind of "end-of-the-world" of effects
 	override def main: Double = {
-		val area = 50 // area size in which I want sense temperature
-		val leader = S(area, nbrRange) // center of that area
-		val potential = distanceTo(leader) // used to send information to leader
-		val areaTemperature = average(leader, temperature) // average temperature value
-		broadcast(leader, areaTemperature) // share the temperature to devices
+		// area size in which I want sense temperature
+		val area = 50 
+		// center of that area
+		val leader = S(area, nbrRange) 
+		// used to send information to leader
+		val potential = distanceTo(leader)
+		// average temperature value
+		val areaTemperature = average(leader, sense("temperature")) 
+		// share the temperature to devices
+		broadcast(leader, areaTemperature)
 	}
-	def temperature: Double = randomGenerator().nextDouble() * 10 + 20
 }
-val program = new DistributedTemperatureSensing
 			\end{minted}
 		\end{tcolorbox}
 	\end{alertblock}
@@ -988,11 +1033,14 @@ val program = new DistributedTemperatureSensing
 class Channel extends AggregateProgram 
 	with StandardSensors with BlockG {
 	override def main() = {
-		def source : Boolean = sense("source") // zone of the space that we want to link to target
-		def target : Boolean = sense("target") // the target of the channel
+		// zone of the space that we want to link to target
+		def source : Boolean = sense("source")
+		// the target of the channel
+		def target : Boolean = sense("target") 
 		def channel(source: Boolean, target: Boolean, width: Double): Boolean = {
 			// All nodes that are inside the channel
-			distanceTo(source) + distanceTo(target) <= distanceBetween(source, target) + width
+			distanceTo(source) + distanceTo(target) 
+				<= distanceBetween(source, target) + width
 		}
 		val channelWidth = 1
 		channel(source, target, channelWidth)
@@ -1024,7 +1072,7 @@ class Channel extends AggregateProgram
 	 \end{itemize}
 	 \item data are \emph{placed} through distributed data flows, 
 	 \item support multiple software architectures (Client Server, P2P, ...) abstracting over low-level communication details and data conversions
-	 \item Based on Scala \emph{macro} (< 2.13)
+	 \item Based on Scala \emph{macro} (<= 2.13)
    \item Support several communication protocl (TCP, WebSocket, ...)
    \item Multi-module \& cross-platform 
 \end{itemize}
@@ -1032,14 +1080,14 @@ class Channel extends AggregateProgram
 \begin{frame}[fragile]{ScalaLoci -- Example}
 	\begin{alertblock}{}
 		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
-			\begin{minted}{scala}
+			\begin{minted}[fontsize=\scriptsize]{scala}
 import loci._ // Contexts..
 import loci.serializer.upickle._ // Serialization context
 import loci.communicator.tcp._ // Communication context
 import rescala.default._ // Observable (reactive stream) cotenxt
 
 @multitier object Chat { // a deployment definition
-	@peer type Server <: { type Tie <: Multiple[Client] } // pear and connections
+	@peer type Server <: { type Tie <: Multiple[Client] } // peers and connections
 	@peer type Client <: { type Tie <: Single[Server] }
 	// Message are placed on Deployments
 	val message : Evt[String] on Client = on[Client] { Evt[String] }
