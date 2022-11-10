@@ -1,7 +1,7 @@
-# Scala cross-platform
+# Scala to the large
 
-A brief overview of Scala cross platform capabilities.
-- discussion on framework vs. libraries
-- on sbt & scala compiler plugins
-- Scala.js & scala native project example
-- Project showcase
+Topics:
+- Recall on low-level concurrency API (JVM model)
+- Future & Promise as platform-independent concurrency mechanisms
+- Functional concurrency management: Monad effects (IO & Task) and (Functional) Reactive streams
+- An application example leveraging Effects & Functional Reactive Programming (FRP)
