@@ -90,7 +90,7 @@
     \begin{enumerate}
 				\item Scala \emph{syntactic flexibility}: enable crafting of embedded domain-specific languages,
 				with Scala serving as a host language, emulating several programming models (e.g., actor)
-				\item Scala is a \emph{safe} language: static type safety reduces the amount of possible errors that developers have to care of
+				\item Scala is a \emph{safe} language: static type safety reduces the number of possible errors that developers have to care of
 				\item \emph{Interoperability}: Scala programs can seamlessly use existing Java libraries, and interact with
 				Java's rich ecosystem (recently with JS and Native too)
 		\end{enumerate}
@@ -112,7 +112,7 @@
      	\item ``Monadic'' GUI \href{https://github.com/cric96/scala-functional-gui}{\faLink}  
 		\end{itemize}
 	\end{itemize}
-\end{frame}
+ \end{frame}
 %===============================================================================
 \section{Concurrency}
 \subsection{Low-level API}
@@ -133,13 +133,13 @@ thread.start() // side effect, the computation starts
 					\end{minted}
 				\end{tcolorbox}
 
-				\item Explicit synchornization through \texttt{join}
+				\item Explicit synchronization through \texttt{join}
 				\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					\begin{minted}{scala}
 val threadA = ...
 val threadB = ...
 threadA.start()
-threadA.join() // synchornization point, A andThen B
+threadA.join() // synchronization point, A andThen B
 threadB.start()
 					\end{minted}
 				\end{tcolorbox}
@@ -149,7 +149,7 @@ threadB.start()
 			\begin{itemize}
 				\item Ensure exclusive access to resources 
 				\item Synchronization and communication among users
-    		\item Implemented through \mintinline{scala}{synchronized} (not a keyword!!), \mintinline{scala}{wait}, \mintinline{scala}{notify} and \mintinline{scala}{notifyAll}
+    		\item Implemented through \mintinline{scala}{synchronized}, \mintinline{scala}{wait}, \mintinline{scala}{notify} and \mintinline{scala}{notifyAll}
       	\item Or by using high-level API (\mintinline{scala}{java.util.concurrent})
     		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					\begin{minted}{scala}
@@ -182,7 +182,7 @@ object ThreadSafeCounter:
  		\item JVM API cannot be used in different platforms (i.e., Scala.js)
    	\item Use these APIs when:
     \begin{itemize}
-			\item you need to build very high-performant application
+			\item you need to build a very high-performant application
    		\item you create an application that targets only the JVM ecosystem 
 		\end{itemize}
 		\item in all the other cases, you should use \texttt{scala.concurrent} API
@@ -191,10 +191,10 @@ object ThreadSafeCounter:
 \begin{frame}[fragile, allowframebreaks]{Execution Context}
 	\begin{itemize}
 		\item An \texttt{ExecutionContext} can execute program logic asynchronously, typically but not necessarily on a thread pool
-		\item First layer of abstraction over \texttt{Thread}s used for large number of small concurrent tasks with high
+		\item First layer of abstraction over \texttt{Thread}s used for a large number of small concurrent tasks with high
 		throughput
   	\item Similar to the \texttt{Executors} Java framework, but platform-independent (works bot from JVM, JS, Native)
-   	\item Bring to pass the execution context ``implictily'' (i.e., using \mintinline{scala}{given} \& {\color{darkgreen}\mintinline{scala}{using}}) 
+   	\item Bring to pass the execution context ``implicitly'' (i.e., using \mintinline{scala}{given} \& {\color{darkgreen}\mintinline{scala}{using}}) 
 		 \item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
 def sayGreet()(using context: ExecutionContext): Unit =
@@ -214,12 +214,12 @@ def sayGreet()(using context: ExecutionContext): Unit =
 	\end{itemize}
 	\framebreak
 	\begin{itemize}
-		\item Used as an ``execution'' context platform for high level concurrent abstraction (e.g., Future)
+		\item Used as an ``execution'' context platform for high-level concurrent abstraction (e.g., Future)
   	\item We can built a ``context''-oriented DSL for async computation:
 		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
 /* In Scala, a natural way to "enrich" 
-	 the new "language" consists in using contexts + entrypoints.
+	 the new "language" consists in using contexts + entry points.
 */
 def async(any: => Unit)(using ExecutionContext): Unit =
 	summon[ExecutionContext].execute(() => any)
@@ -236,10 +236,10 @@ def async(any: => Unit)(using ExecutionContext): Unit =
 		\end{tcolorbox}
 	\end{itemize}
 \end{frame}
-\begin{frame}[fragile]{Parallell collections example: toward declative parallel computations}
+\begin{frame}[fragile]{Parallell collections example: toward declarative parallel computations}
 	\begin{itemize}
 		\item Scala collections can be transformed into their parallel counterparts by calling the par
-		method (as standard library for Scala < 2.13, an external dependecy for Scala >= 2.13 \href{https://github.com/scala/scala-parallel-collections}{\faLink})
+		method (as standard library for Scala < 2.13, an external dependency for Scala >= 2.13 \href{https://github.com/scala/scala-parallel-collections}{\faLink})
 		\item It exists solely in order to improve the running time of the program
   	\item \bold{Idea}: I express a data pipeline computation and then the runtime optimizes it using several cores
 		\item[] \begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
@@ -282,7 +282,7 @@ def async(any: => Unit)(using ExecutionContext): Unit =
 // To create a future computation, you have to enrich the context
 using ExecutionContext = scala.concurrent.ExecutionContext.global
 Future { 1 } // Future are eager, i.e., the computation starts on creation
-val fututers = (1 to 10).map(Future.apply) // create sequence of future
+val futures = (1 to 10).map(Future.apply) // create sequence of future
 // standard Monad sequence, applied to Future :)
 Future.sequential(futures) // Map F[Future[_]] in Future[F[_]]
 				\end{minted}
@@ -326,7 +326,7 @@ def readFile(name: String): Future[Source] = Future { Source.fromFile(name) }
 
 val concurrentManipulation = for {
 	buildSbt <- readFile("build.sbt")
-	// synchornization point, scalafmt has to wait buildSbt future
+	// synchornization point, scalafmt has to wait for buildSbt future
 	// NB! these two futures are sequential
 	scalafmt <- readFile(".scalafmt.conf") 
 	// I can map the "lazy" data inside a Future "for-comprehension"..
@@ -391,7 +391,7 @@ val latch = CountDownLatch(blocks)
 val all = (1 to blocks).map(i =>
 	Future {
 		println(s"Turn $i")
-		blocking { // NB! Does not work for thread pool
+		blocking { // NB! Does not work with thread pool
 			latch.countDown()
 			latch.await()
 		}
@@ -465,7 +465,7 @@ for a <- futureRandom; b <- futureRandom yield (a + b)
 		\end{itemize}
 		\item Therefore, effects $\neq$ side-effects
 		\begin{itemize}
-			\item when a piece of code contains (express with effect) a side-effect, that action \emph{just happens}
+			\item when a piece of code contains a side-effect, that action \emph{just happens}
 		\end{itemize}
 		\item \texttt{IO} (and \texttt{Task}, we will use this name hereafter) can be executed asynchronously, in parallel, in different threads, ...
   	\item \bold{NB!} When side-effecting code is wrapped in one \texttt{Task}...
@@ -485,8 +485,8 @@ Task { Source.fromFile(...) }
 \end{frame}
 \begin{frame}{Task \href{https://monix.io/docs/current/eval/task.html}{\faLink}}
 	\begin{alertblock}{Definition}
-		Task represents a specification for a possibly lazy or asynchronous
-computation, which when executed will produce a data as a result, along
+		A task represents a specification for a possibly lazy or asynchronous
+computation, which when executed will produce data as a result, along
 with possible side effects.
 	\end{alertblock}
 	\begin{itemize}
@@ -500,7 +500,7 @@ with possible side effects.
     \item \texttt{Task}s can express parallel computations
     \item It is referential transparent for most of the API, it contains unpure method marked with \mintinline{scala}{@UnsafeBecauseImpure}
     \begin{itemize}
-			\item they should be used in the ``end-of-the-world'' (i.e., the main method)
+			\item they should be used in the \emph{``end-of-the-world''} %(i.e., the main method)
 		\end{itemize}
 	\end{itemize}
 \end{frame}
@@ -614,7 +614,7 @@ val toHigh = Task(println("The number is wrong!! (high)")).map(_ => State.Contin
 val toLow = Task(println("The number is wrong!! (low)")).map(_ => State.Continue)
 val correct = Task(println("You won!!")).map(_ => State.End)
 
-// The main, a typical way to express IO in functional program, through flatmap operations..
+// a typical way to express IO in functional program is through flatmap operations..
 val game = for {
 	_ <- hello
 	number <- toGuess
@@ -633,7 +633,7 @@ val game = for {
 % If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
 
 	\begin{alertblock}{Definition}
-		The Observable is a data type for modeling and processing asynchronous and reactive streaming of (possibly infinite) events with non-blocking back-pressure.
+		The Observable is a data type for modelling and processing asynchronous and reactive streaming of (possibly infinite) events with non-blocking back-pressure.
 	\end{alertblock}
 	\begin{itemize}
 		\item At its simplest, an\ \texttt{Observable} is a replacement for \texttt{Iterable} or Scala \texttt{LazyList}, but with the ability to process asynchronous events without blocking
@@ -746,7 +746,7 @@ val mergeParallel = element.delayOnNext(100 milliseconds)
 						\begin{itemize}
 							\item Scala Doc \href{https://monix.io/api/current/monix/reactive/index.htmlhttps://monix.io/api/current/monix/reactive/index.html}{\faLink}
        				\item Documentation  \href{https://monix.io/docs/current/reactive/observable.html}{\faLink}
-           \item Code example repository (about buffering, error handling, rate emission)  \href{}{\faLink}
+           \item Code example repository (about buffering, error handling, rate emission)  \href{https://github.com/cric96/scala-concurrent-programming/tree/main/src/main/scala/it/unibo/reactive}{\faLink}
 						\end{itemize}
 					\end{alertblock}	
 \end{frame}
@@ -762,7 +762,8 @@ val mergeParallel = element.delayOnNext(100 milliseconds)
 			\item clean model as an immutable data (the manipulation is typically performed with \bold{lens}\href{https://www.optics.dev/Monocle/}{\faLink} \,)
    		\item model evolution expressed as a composition between Tasks  
 			\item simplifies the interaction between View and Model (i.e., the Controller)
-   		\item side effects happen only at the end of the world
+   		\item side effects happen only at ``clamps''
+   		\item foster an onion architecture
 		\end{itemize}
 	\end{itemize}
 	\begin{alertblock}{UI (defines Input and Output boundary interface)}
@@ -781,7 +782,7 @@ trait UI:
 		\end{minted}
 		\end{tcolorbox}
 	\end{alertblock}
-	\begin{alertblock}{Model: set of data that expresses a snapshot of the "world"}
+	\begin{alertblock}{Model: a set of data that expresses a snapshot of the "world"}
 		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
 enum Entity(...):
@@ -792,7 +793,7 @@ case class World(...)
 			\end{tcolorbox}
 		\end{alertblock}
 
-		\begin{alertblock}{Update: namely how world should change}
+		\begin{alertblock}{Update: namely how the world should change}
 			\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 				\begin{minted}[fontsize=\scriptsize]{scala}
 // This should be expressed as a function, 
