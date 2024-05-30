@@ -228,9 +228,8 @@ def async(any: => Unit)(using ExecutionContext): Unit =
 	// express the context ==> enrich the language
 	given ExecutionContext = ExecutionContext.global
 	println("Do somethings")
-	async { // I can use async like a language API
+	async: // I can use async like a language API
 		println("order??")
-	}
 	println("After")
 			\end{minted}
 		\end{tcolorbox}
@@ -292,10 +291,10 @@ Future.sequential(futures) // Map F[Future[_]] in Future[F[_]]
 		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					 \begin{minted}{scala}
 Future(10)
-	.onComplete {
+	.onComplete:
 		case Success(value) => println(s"Hurray! $value")
 		case Failure(exception) => println("Oh no..")
-	}
+
 					 \end{minted}
 				 \end{tcolorbox}
 		 \end{alertblock}
@@ -324,7 +323,7 @@ val combine = build.flatMap(data => scalafmt.map(other => data + other))
 def extractLines(source: Source): String = source.getLines().mkString("\n")
 def readFile(name: String): Future[Source] = Future { Source.fromFile(name) }
 
-val concurrentManipulation = for {
+val concurrentManipulation = for
 	buildSbt <- readFile("build.sbt")
 	// synchornization point, scalafmt has to wait for buildSbt future
 	// NB! these two futures are sequential
@@ -332,7 +331,7 @@ val concurrentManipulation = for {
 	// I can map the "lazy" data inside a Future "for-comprehension"..
 	fileSbt = extractLines(buildSbt)
 	fileFmt = extractLines(scalafmt)
-} yield (fileFmt + fileSbt)
+yield (fileFmt + fileSbt)
 					\end{minted}
 				\end{tcolorbox}
 \end{alertblock}
@@ -341,9 +340,9 @@ val concurrentManipulation = for {
 						\begin{minted}{scala}
 val myContext = ExecutionContext
 	.fromExecutor(Executors.newSingleThreadExecutor())
-def createFuture(using ExecutionContext) = Future {
+def createFuture(using ExecutionContext) = Future:
 	println(s"Hey! The thread is: ${Thread.currentThread().getName}")
-}
+
 /* I can pass explicitly the context 
    (i.e., when I want a fine control for execution) */
 createFuture(using global)
@@ -356,9 +355,9 @@ createFuture
 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 		\begin{minted}{scala}
 val failed = Future.fromTry(Failure(new Exception("fail")))
-failed.onComplete { case Failure(exception) =>
-	println("error..")
-}
+failed.onComplete:
+	case Failure(exception) =>
+		println("error..")
 // Special operator that waits for a Future.. Sync point (to avoid)
 Await.ready(failed, Duration.Inf)
 // creates a future that completes if the future fails
@@ -389,13 +388,11 @@ fail.foreach(println)
 val blocks = 20
 val latch = CountDownLatch(blocks)
 val all = (1 to blocks).map(i =>
-	Future {
+	Future:
 		println(s"Turn $i")
-		blocking { // NB! Does not work with thread pool
+		blocking: // NB! Does not work with thread pool
 			latch.countDown()
 			latch.await()
-		}
-	}
 )
 Await.ready(Future.sequence(all), Duration.Inf)
 		\end{minted}
