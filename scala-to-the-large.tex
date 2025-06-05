@@ -36,8 +36,8 @@
 \title[Scala(e) to the large]
 {Scala(e) to the large}
 %
-\subtitle[Concurrent programming in Scala and relevant Frameworks]
-{Concurrent programming in Scala and relevant Frameworks}
+\subtitle[From Futures to Effects: Mastering Concurrency in Scala]
+{From Futures to Effects: Mastering Concurrency in Scala}
 %
 \author[\sspeaker{Aguzzi}]
 {\speaker{Gianluca Aguzzi} \href{mailto:gianluca.aguzzi@unibo.it}{gianluca.aguzzi@unibo.it}}
@@ -81,16 +81,16 @@
 \section{Introduction}
 \begin{frame}{Why Scala?}
 	\begin{itemize}
-		\item Several languages address concurrency by design (e.g. \emph{Erlang}, \emph{Go}, ...)
-		\item Scala is used for several distributed \& concurrent computing frameworks
+		\item Several languages address concurrency \textbf{by design} (e.g. \emph{Erlang}, \emph{Go}, ...)
+		\item Scala is used for several \textbf{distributed} \& \textbf{concurrent} computing frameworks
 		\begin{itemize}
 			\item Both in research (\bold{ScalaLoci} \href{https://scala-loci.github.io/}{\faLink}, \bold{ScaFi} \href{https://scafi.github.io/}{\faLink}) and in industry (\bold{Akka} \href{https://akka.io/}{\faLink}, \bold{Spark} \href{https://spark.apache.org/}{\faLink}, \bold{Flink} \href{https://flink.apache.org/}{\faLink}) 
 		\end{itemize}
-  	\item Reasons:
+  	\item Reasons?:
     \begin{enumerate}
-				\item Scala \emph{syntactic flexibility}: enable crafting of embedded domain-specific languages,
-				with Scala serving as a host language, emulating several programming models (e.g., actor)
-				\item Scala is a \emph{safe} language: static type safety reduces the number of possible errors that developers have to care of
+				\item Scala \emph{syntactic flexibility}: enable crafting of embedded domain-specific languages (DSL),
+				with Scala serving as a host language, emulating different \emph{programming models} (e.g., actor)
+				\item Scala is a \emph{safe} language: static type safety reduces the number of potential errors that developers need to handle
 				\item \emph{Interoperability}: Scala programs can seamlessly use existing Java libraries, and interact with
 				Java's rich ecosystem (recently with JS and Native too)
 		\end{enumerate}
@@ -99,7 +99,7 @@
 		\item Today topics: 
 		\begin{enumerate}
 			\item Recall on low-level concurrency API (JVM model)
-   		\item Future \& Promise as platform-independent concurrency mechanisms
+   		\item \textbf{Future} \& \textbf{Promise} as platform-independent concurrency mechanisms
      	\item Functional concurrency management: Monad effects (IO \& Task) and (Functional) Reactive streams 
       \item An application example leveraging Effects \& Functional Reactive Programming (FRP)
 		\end{enumerate}
@@ -172,20 +172,22 @@ object ThreadSafeCounter:
 \end{frame}
 \begin{frame}{Considerations}
 	\begin{itemize}
-		\item Typically, \texttt{Thread}s (and low-level APIs) are not used directly in Scala
+		\item Typically, \texttt{Thread}s (and low-level APIs) \textbf{are not} used directly in Scala
   	\begin{itemize}
-			\item \texttt{Thread}s computations do not \emph{compose} well (we will see what we mean with composition) \dots
-   		\item \dots and Scala loves composition (e.g., for-comprehension \& monads)
-     \item \texttt{Thread}s are not declarative (``encapsulate'' the effect of computations)
-		\end{itemize}
- 		\item \texttt{scala.concurrent} exposes several high-level patterns to handle concurrency \& synchronization
- 		\item JVM API cannot be used in different platforms (i.e., Scala.js)
+			\item \texttt{Thread}s are \textbf{low-level} and \textbf{error-prone}: manual synchronization, deadlocks, race conditions
+			\item \texttt{Thread}s do not \emph{compose} well -- difficult to combine multiple concurrent operations
+			\item \dots and Scala emphasizes composition (e.g., for-comprehension, monads, functional combinators)
+			\item \texttt{Thread}s are \emph{imperative} rather than \textbf{declarative} -- focus on \emph{how} rather than \emph{what}
+			\item Platform dependency: JVM-specific APIs cannot be used in Scala.js or Scala Native---next lessons
+			\end{itemize}
+			\item \texttt{scala.concurrent} provides high-level, composable abstractions for concurrency
+			\item These abstractions work across all Scala platforms (JVM, JS, Native)
    	\item Use these APIs when:
     \begin{itemize}
-			\item you need to build a very high-performant application
-   		\item you create an application that targets only the JVM ecosystem 
-		\end{itemize}
-		\item in all the other cases, you should use \texttt{scala.concurrent} API
+		\item you need to build a \textbf{very high-performant} application
+			\item you create an application that targets \textbf{only} the JVM ecosystem 
+			\end{itemize}
+			\item in \textbf{all the other cases}, you should use \texttt{scala.concurrent} API
   \end{itemize}
 \end{frame}
 \begin{frame}[fragile, allowframebreaks]{Execution Context}
@@ -254,17 +256,20 @@ def async(any: => Unit)(using ExecutionContext): Unit =
 	\begin{alertblock}{Definition}
 		\centering
 		\begin{itemize}
-			\item \emph{``A Future represents a value which may or may not currently be available, but will be available at some point, or as an exception if that value could not be made available.''}
+			\item \emph{``A \textbf{Future} represents a \textbf{value} which may or may not currently be available, but will be available at \textbf{some point}, or as an \textbf{exception} if that value could not be made available.''}
 		\end{itemize}
 	\end{alertblock}
 \begin{itemize}
- \item It is \bold{the} idiomatic way to express concurrent computations
- \item You can handle the result of a Future with \emph{callback} and   \emph{transformation} methods
- \item Future is a monad that models \emph{latency} as an \emph{effect}
- \item Futures are one-shot: the value contained by a future will be eventually available
- \item Futures are \emph{eager}: the computation starts on \texttt{Future} creation
- \item Futures \emph{memoize} the value: once the computation is over, the data will be always the same
- \item Examples: HTTP requests, File writing \& reading, TCP connections, ...
+\item \textbf{Key characteristics}:
+\begin{itemize}
+	\item It is \bold{the} idiomatic way to express concurrent computations in Scala
+	\item Future is a monad that models \emph{latency} as an \emph{effect}
+	\item Futures are one-shot: the value contained by a future will be eventually available
+	\item Futures are \emph{eager}: the computation starts on \texttt{Future} creation
+	\item Futures \emph{memoize} the value: once the computation is over, the data will be always the same
+\end{itemize}
+\item \textbf{Usage}: You can handle the result of a Future with \emph{callback} and \emph{transformation} methods
+\item \textbf{Common examples}: HTTP requests, File writing \& reading, TCP connections, ...
 \end{itemize}
 \begin{alertblock}{On notation}
 	\begin{itemize}
@@ -402,11 +407,11 @@ Await.ready(Future.sequence(all), Duration.Inf)
 
 \begin{frame}[fragile]{Promise}
 \begin{itemize}
-	\item A Factory of \texttt{Future}
- 	\item A \texttt{Promise} can be thought of as a writable, single-assignment container, which completes a future
-  \item \emph{Single assignment} means that the \texttt{Promise} can be completed once (both with a value or with an exception)
-  \item Use promises to bridge the gap between callback-based APIs and futures
-  \item Use promises to extend futures with additional functional combinators
+	\item A \textbf{Factory} of \texttt{Future}
+	\item A \texttt{Promise} can be thought of as a \textbf{writable}, \textbf{single-assignment} container, which completes a future
+  \item \emph{Single assignment} means that the \texttt{Promise} can be completed \textbf{once} (both with a value or with an exception)
+  \item Use promises to \textbf{bridge the gap} between callback-based APIs and futures
+  \item Use promises to \textbf{extend} futures with additional functional combinators
 \end{itemize}
 \begin{alertblock}{Promise API: in a nutshell}
 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
@@ -422,21 +427,21 @@ catch case ex: IllegalStateException => println("Already completed!!")
 \end{frame}
 \begin{frame}[fragile]{Future Consideration about FP}
 \begin{itemize}
-	\item Futures are \emph{eager} \faArrowRight \, we cannot express lazy computation
+	\item \textbf{Futures are \emph{eager}} \faArrowRight \, we cannot express lazy computation
 	\item[] 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 		\begin{minted}{scala}
 Future { println("Start!!") } // the computation starts on creation
 		\end{minted}
 	\end{tcolorbox}
- 	\item Futures are \emph{memoized} \faArrowRight \, we cannot restart a computation that brings to a certain value
+	\item \textbf{Futures are \emph{memoized}} \faArrowRight \, we cannot restart a computation that brings to a certain value
 	 \item[] 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 		\begin{minted}{scala}
 val result = Future { math.random }
 result.foreach { println(_) }
-result.foreach { pritnln(_) } // same result!
+result.foreach { println(_) } // same result!
 		\end{minted}
 	\end{tcolorbox}
-  \item Futures are not \emph{referential transparent} \faArrowRight \, we cannot build \emph{pure} FP programs
+  \item \textbf{Futures are not \emph{referential transparent}} \faArrowRight \, we cannot build \emph{pure} FP programs
 	\item[] 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 		\begin{minted}{scala}
 val random = Random(0)
@@ -447,29 +452,32 @@ val futureRandom = future(Random(0))
 for a <- futureRandom; b <- futureRandom yield (a + b)
 		\end{minted}
 	\end{tcolorbox}
-	\item Futures combine the \emph{execution} and the \emph{computation} 
+	\item \textbf{Futures combine the \emph{execution} and the \emph{computation}}
+	\begin{itemize}
+		\item[$\Rightarrow$] Need for better abstractions that separate \emph{description} from \emph{execution}
+	\end{itemize}
 \end{itemize}
 \end{frame}
 \subsection{Task (IO) Monad}
 \begin{frame}[fragile]{Effects (in FP)}
 	\begin{itemize}
-		\item An effect is a \emph{description} of an action (or actions) that will be taken when evaluation happens
-		\item In Category Theory term, each Monad has an effect
+		\item An \textbf{effect} is a \emph{description} of an action (or actions) that will be taken when evaluation happens
+		\item In Category Theory term, each \textbf{Monad} has an effect
 		\begin{itemize}
-			\item Option is a monad that models the effect of optionality (of being something optional)
-   		\item Future is a monad that models the impact of latency
-     	\item \texttt{IO} (in Cats ~\href{https://typelevel.org/cats/}{\faLink} term, \texttt{Task} in Monix \href{https://monix.io/}{\faLink}) is a monad that models the effect of \emph{computation}
+			\item \texttt{Option} is a monad that models the effect of \textbf{optionality} (of being something optional)
+		\item \texttt{Future} is a monad that models the impact of \textbf{latency}
+		\item \texttt{IO} (in Cats ~\href{https://typelevel.org/cats/}{\faLink} term, \texttt{Task} in Monix \href{https://monix.io/}{\faLink}) is a monad that models the effect of \textbf{computation}
 		\end{itemize}
-		\item Therefore, effects $\neq$ side-effects
+		\item Therefore, \textbf{effects} $\neq$ \textbf{side-effects}
 		\begin{itemize}
-			\item when a piece of code contains a side-effect, that action \emph{just happens}
+			\item when a piece of code contains a \textbf{side-effect}, that action \emph{just happens}
 		\end{itemize}
-		\item \texttt{IO} (and \texttt{Task}, we will use this name hereafter) can be executed asynchronously, in parallel, in different threads, ...
-  	\item \bold{NB!} When side-effecting code is wrapped in one \texttt{Task}...
+		\item \texttt{IO} (and \texttt{Task}, we will use this name hereafter) can be executed \textbf{asynchronously}, in \textbf{parallel}, in different threads, ...
+	\item \bold{NB!} When side-effecting code is wrapped in one \texttt{Task}...
 		\begin{itemize}
-			 \item ... the code itself still contains side-effects 
-			 \item but we can reason about the whole thing as an effect, rather than as a side-effect
-    \end{itemize}
+			 \item ... the code itself \textbf{still contains side-effects} 
+			 \item but we can \textbf{reason about the whole thing as an effect}, rather than as a side-effect
+	\end{itemize}
 		\item[] 	\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 			\begin{minted}{scala}
 // this has a side-effect, 
@@ -477,25 +485,23 @@ for a <- futureRandom; b <- futureRandom yield (a + b)
 Task { Source.fromFile(...) } 
 			\end{minted}
 		\end{tcolorbox}
-		\item \bold{NB!} \texttt{IO} is more general then \texttt{Task}, but today we consider these abstractions as the same
+		\item \bold{NB!} \texttt{IO} is \textbf{more general} then \texttt{Task}, but today we consider these abstractions as the same
 	\end{itemize}
 \end{frame}
 \begin{frame}{Task \href{https://monix.io/docs/current/eval/task.html}{\faLink}}
 	\begin{alertblock}{Definition}
-		A task represents a specification for a possibly lazy or asynchronous
-computation, which when executed will produce data as a result, along
-with possible side effects.
+		\emph{``A task represents a \textbf{specification} for a possibly \textbf{lazy} or \textbf{asynchronous} computation, which when executed will produce data as a result, along with possible \textbf{side effects}.''}
 	\end{alertblock}
 	\begin{itemize}
-  	\item Does not trigger the execution, or any effects 
+	\item \textbf{Does not trigger the execution}, or any effects 
 		\begin{itemize}
 			\item \texttt{Task} does not represent a running computation or a value detached from time (like Future)
 		\end{itemize}
-   	\item Allows for cancelling of a running computation
-    \item \texttt{Task}s can be memoized (i.e., more control about the execution)
-    \item It models a producer pushing only one value to one or multiple consumers
-    \item \texttt{Task}s can express parallel computations
-    \item It is referential transparent for most of the API, it contains unpure method marked with \mintinline{scala}{@UnsafeBecauseImpure}
+	\item \textbf{Allows for cancelling} of a running computation
+	\item \texttt{Task}s can be \textbf{memoized} (i.e., more control about the execution)
+	\item It models a producer pushing \textbf{only one value} to one or multiple consumers
+	\item \texttt{Task}s can express \textbf{parallel computations}
+	\item It is \textbf{referential transparent} for most of the API, it contains unpure method marked with \mintinline{scala}{@UnsafeBecauseImpure}
     \begin{itemize}
 			\item they should be used in the \emph{``end-of-the-world''} %(i.e., the main method)
 		\end{itemize}
@@ -505,17 +511,17 @@ with possible side effects.
 	\begin{alertblock}{Task Creation}
 		\begin{tcolorbox}[left=0pt, top=0pt, bottom=0pt]
 					 \begin{minted}{scala}
-val now = Task.now {
+val now = Task.now:
 	Math.random()
-} // it evaluates the value asap and wraps it inside the task
+// it evaluates the value asap and wraps it inside the task
 //Task.apply =:= Task.eval
 // lazy.. the evaluation happens when the task is created
 val standard = Task(Math.random())
 // Similar to a lazy val, the value is evaluated 
 // once and then memoized (like Future)
-val once = Task.evalOnce {
+val once = Task.evalOnce:
 	Math.random()
-}
+
 val future = Future(Math.random())
 					 \end{minted}
 				 \end{tcolorbox}
@@ -630,19 +636,19 @@ val game = for {
 % If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
 
 	\begin{alertblock}{Definition}
-		The Observable is a data type for modelling and processing asynchronous and reactive streaming of (possibly infinite) events with non-blocking back-pressure.
+		The \textbf{Observable} is a data type for modelling and processing \textbf{asynchronous} and \textbf{reactive} streaming of (possibly \textbf{infinite}) events with \textbf{non-blocking back-pressure}.
 	\end{alertblock}
 	\begin{itemize}
-		\item At its simplest, an\ \texttt{Observable} is a replacement for \texttt{Iterable} or Scala \texttt{LazyList}, but with the ability to process asynchronous events without blocking
-  	\item Enables Functional Reactive Programming (FRP) 
-   \item Basically the Observer pattern \emph{on steroids}
-   \begin{itemize}
-			\item async events management (decoupling of control flow)
-   		\item backpressure 
-     	\item error management
-	 \end{itemize}
-   \item Expresses lazy computations
-   \item Inspired by ReacitveX \href{https://reactivex.io/intro.html}{\faLink}
+			\item At its simplest, an \texttt{Observable} is a replacement for \texttt{Iterable} or Scala \texttt{LazyList}, but with the ability to process \textbf{asynchronous events} without \textbf{blocking}
+		\item Enables \textbf{Functional Reactive Programming} (FRP) 
+	   \item Basically the \textbf{Observer pattern} \emph{on steroids}
+	   \begin{itemize}
+				\item \textbf{async events} management (decoupling of control flow)
+			\item \textbf{backpressure} 
+			\item \textbf{error management}
+		 \end{itemize}
+	   \item Expresses \textbf{lazy computations}
+	   \item Inspired by \textbf{ReactiveX} \href{https://reactivex.io/intro.html}{\faLink}
 	\end{itemize}
 	\begin{alertblock}{Observable vs. Task}
 		\begin{table}[]
@@ -749,18 +755,18 @@ val mergeParallel = element.delayOnNext(100 milliseconds)
 \end{frame}
 \begin{frame}[allowframebreaks, fragile]{FRP Application: A tentative design \href{https://github.com/cric96/scala-frp-gui}{\faLink}}
 	\begin{itemize}
-		\item The model is described using Algebraic Data Type and functional manipulation
-		\item Rendering is wrapped on a \texttt{Task} (it expresses a side-effect)
-  	\item The events (e.g., input from View, time evolution) are expressed as \texttt{Observable} (i.e., event sources)
-   	\item The Model data evolves following the event \texttt{Observable} (creating an \texttt{Observable} of models)
-    \item On top of Model \texttt{Observable}, the rendering Task is triggered (e.g. for each new Model data)
-		\item \textbf{Potential benefits}
+		\item The \textbf{model} is described using \textbf{Algebraic Data Types} and \emph{functional manipulation}
+		\item \textbf{Rendering} is wrapped in a \texttt{Task} (it expresses a \emph{side-effect})
+		\item The \textbf{events} (e.g., input from View, time evolution) are expressed as \texttt{Observable} (i.e., \emph{event sources})
+		\item The \textbf{Model data} evolves following the event \texttt{Observable} (creating an \texttt{Observable} of models)
+		\item On top of Model \texttt{Observable}, the \textbf{rendering Task} is triggered (e.g., for each new Model data)
+		\item \textbf{Potential benefits:}
 		\begin{itemize}
-			\item clean model as an immutable data (the manipulation is typically performed with \bold{lens}\href{https://www.optics.dev/Monocle/}{\faLink} \,)
-   		\item model evolution expressed as a composition between Tasks  
-			\item simplifies the interaction between View and Model (i.e., the Controller)
-   		\item side effects happen only at ``clamps''
-   		\item foster an onion architecture
+			\item \emph{Clean model} as an \textbf{immutable data} (the manipulation is typically performed with \textbf{lens} \href{https://www.optics.dev/Monocle/}{\faLink})
+			\item \emph{Model evolution} expressed as a \textbf{composition between Tasks}
+			\item \emph{Simplifies} the interaction between \textbf{View} and \textbf{Model} (i.e., the Controller)
+			\item \emph{Side effects} happen only at \textbf{``clamps''}
+			\item Foster an \textbf{onion architecture}
 		\end{itemize}
 	\end{itemize}
 	\begin{alertblock}{UI (defines Input and Output boundary interface)}
@@ -844,16 +850,16 @@ def start(ui: UI): Task[Unit] =
 \end{frame}
 \begin{frame}[fragile]{In Summary}
 	\begin{itemize}
-		\item Use Task to express any potential computation
-  	\item Use Future to run a computation expressed through Task 
-   	\item Use Observable \& Subject to express computation with multiple values (e.g. event sources)
-    \item In this way:
-    \begin{itemize}
-			\item your application becomes ``reactive''
-   		\item side effects happen only at the ``end-of-the-world''
-     \item you can reason about effects, avoiding to care about side effects
-     \item error handling cames for ``free"
-     \item your application works seamlessly in JVM \& JS world
+		\item Use \textbf{Task} to express any potential computation
+	\item Use \textbf{Future} to run a computation expressed through Task 
+	\item Use \textbf{Observable} \& \textbf{Subject} to express computation with multiple values (e.g. event sources)
+	\item In this way:
+	\begin{itemize}
+			\item your application becomes \textbf{``reactive''}
+		\item side effects happen only at the \textbf{``end-of-the-world''}
+	 \item you can reason about \emph{effects}, avoiding to care about \emph{side effects}
+	 \item \textbf{error handling} comes for \textbf{``free''}
+	 \item your application works \emph{seamlessly} in \textbf{JVM} \& \textbf{JS} world
 		\end{itemize}
 	\end{itemize}
 	\begin{alertblock}{Final remark}
@@ -1054,7 +1060,7 @@ class Channel extends AggregateProgram
 
 \begin{frame}{ScalaLoci}
 \begin{itemize}
-	\item ScalaLoci is a \emph{distributed programming language} embedded into Scala.
+	\item ScalaLoci is a \emph{distributed programming language} embedded into Scala. \href{https://github.com/scala-loci/scala-loci}{\faLink}
  	\begin{itemize}
 		\item based on typed-based \emph{multi-tier} programming
   	\item used to describe deployments \& interaction among components
@@ -1102,6 +1108,30 @@ object Client extends App {
 			\end{minted}
 		\end{tcolorbox}
 	\end{alertblock}
+\end{frame}
+\begin{frame}{What they have in common?}
+	\begin{itemize}
+		\item \textbf{Program vs Runtime Separation}: Clear distinction between program description and execution
+		\begin{itemize}
+			\item \emph{Akka}: Actor behavior definition vs actor system execution
+			\item \emph{Spark}: Dataset transformations vs cluster execution
+			\item \emph{ScaFi}: Aggregate program specification vs distributed simulation/deployment
+			\item \emph{ScalaLoci}: Multi-tier program definition vs peer instantiation
+		\end{itemize}
+		\item \textbf{Expressiveness through DSLs}: High-level abstractions hiding complexity
+		\begin{itemize}
+			\item Domain-specific syntax that feels natural for the problem domain
+			\item Compositional APIs that enable building complex behaviors from simple primitives
+			\item Type-safe abstractions that prevent common distributed programming errors
+		\end{itemize}
+		\item \textbf{Advanced Pattern Usage}: Leveraging Scala's sophisticated type system
+		\begin{itemize}
+			\item \emph{Type-level programming}: Encoding constraints and relationships at compile-time
+			\item \emph{Implicits/Given}: Context propagation and automatic capability injection
+			\item \emph{Macros}: Code generation for boilerplate elimination and performance optimization
+			\item \emph{Higher-kinded types}: Generic abstractions over effect types (F[\_])
+		\end{itemize}
+	\end{itemize}
 \end{frame}
 %/////////
 \frame{\titlepage}
